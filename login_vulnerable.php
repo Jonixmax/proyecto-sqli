@@ -23,7 +23,8 @@ if (isset($_POST['login_username']) && isset($_POST['login_password'])) {
     if ($resultado && $resultado->num_rows > 0) {
         $_SESSION['usuario'] = $resultado->fetch_assoc();
     } else {
-        $error = "Credenciales incorrectas o usuario no encontrado.";
+        // Mismo mensaje genérico que en el entorno seguro
+        $error = "Usuario o contraseña incorrectos. Por favor, intente de nuevo.";
     }
 }
 
@@ -33,15 +34,18 @@ if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'Administrado
         $new_pass = $_POST['new_password'];
         $new_rol = $_POST['new_rol'];
         $conexion->query("INSERT INTO usuarios (username, password, rol) VALUES ('$new_user', '$new_pass', '$new_rol')");
-        $mensaje = "El nuevo empleado ha sido registrado en la base de datos.";
+        // Mismo mensaje
+        $mensaje = "El empleado ha sido registrado correctamente en el sistema.";
     }
     if (isset($_POST['action']) && $_POST['action'] === 'delete') {
         $del_id = (int)$_POST['delete_id'];
         if ($del_id !== (int)$_SESSION['usuario']['id']) {
             $conexion->query("DELETE FROM usuarios WHERE id = $del_id");
+            // Mismo mensaje
             $mensaje = "El registro ha sido eliminado exitosamente.";
         } else {
-            $error = "Error de sistema: No puedes eliminar tu propia sesión activa.";
+            // Mismo error
+            $error = "No puedes eliminar tu propia sesión mientras está activa.";
         }
     }
 }
@@ -97,6 +101,18 @@ if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'Administrado
         }
         /* Ocultar label flotante blanco para entorno oscuro */
         .form-floating>label { color: #adb5bd; }
+        
+        /* 1. Quitar el parche blanco detrás de las etiquetas flotantes */
+        .form-floating > label::after {
+            background-color: transparent !important;
+        }
+
+        /* 2. Arreglar el fondo blanco de la lista desplegable de Roles */
+        .form-select option {
+            background-color: #1e1e2f !important; /* Fondo oscuro */
+            color: #ffffff !important; /* Texto blanco */
+        }
+
         .table-custom { color: white; border-spacing: 0 10px; border-collapse: separate; }
         .table-custom tr {
             background: rgba(255, 255, 255, 0.03);

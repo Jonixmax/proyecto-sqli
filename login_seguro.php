@@ -12,7 +12,7 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
-// SOLUCIÓN: Sentencias Preparadas
+// SOLUCIÓN: Sentencias Preparadas (El código es seguro, pero el mensaje es genérico)
 if (isset($_POST['login_username']) && isset($_POST['login_password'])) {
     $user = $_POST['login_username'];
     $pass = $_POST['login_password'];
@@ -25,7 +25,8 @@ if (isset($_POST['login_username']) && isset($_POST['login_password'])) {
     if ($resultado && $resultado->num_rows > 0) {
         $_SESSION['usuario'] = $resultado->fetch_assoc();
     } else {
-        $error = "Intento bloqueado: Las credenciales son incorrectas o se detectó una inyección.";
+        // Mensaje genérico estándar corporativo
+        $error = "Usuario o contraseña incorrectos. Por favor, intente de nuevo.";
     }
 }
 
@@ -39,7 +40,8 @@ if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'Administrado
         $stmt_add = $conexion->prepare("INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)");
         $stmt_add->bind_param("sss", $new_user, $new_pass, $new_rol);
         $stmt_add->execute();
-        $mensaje = "Transacción parametrizada completada. Usuario registrado.";
+        // Mensaje genérico de éxito
+        $mensaje = "El empleado ha sido registrado correctamente en el sistema.";
     }
 
     if (isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -49,9 +51,11 @@ if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'Administrado
             $stmt_del = $conexion->prepare("DELETE FROM usuarios WHERE id = ?");
             $stmt_del->bind_param("i", $del_id);
             $stmt_del->execute();
-            $mensaje = "Registro eliminado de forma segura mediante Bind Param.";
+            // Mensaje genérico de éxito
+            $mensaje = "El registro ha sido eliminado exitosamente.";
         } else {
-            $error = "Acción denegada por reglas de integridad.";
+            // Mensaje de lógica de negocio normal
+            $error = "No puedes eliminar tu propia sesión mientras está activa.";
         }
     }
 }
