@@ -17,8 +17,10 @@ if (isset($_POST['login_username']) && isset($_POST['login_password'])) {
     $pass = $_POST['login_password'];
 
     // VULNERABILIDAD
+    // CÓDIGO MODIFICADO PARA SOPORTAR STACKED QUERIES
     $query = "SELECT * FROM usuarios WHERE username = '$user' AND password = '$pass'";
-    $resultado = $conexion->query($query);
+    $conexion->multi_query($query); // Habilita múltiples consultas separadas por ;
+    $resultado = $conexion->store_result(); // Guarda el resultado del primer SELECT para que el login no colapse
 
     if ($resultado && $resultado->num_rows > 0) {
         $_SESSION['usuario'] = $resultado->fetch_assoc();
